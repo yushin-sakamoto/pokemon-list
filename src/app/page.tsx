@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { PokemonListResponse, PokemonSpecies, PokemonWithJapaneseName } from '@/types';
+import { hiraganaToKatakana, katakanaToHiragana } from './utils/kana';
 
 export default function Home() {
   const [pokemonList, setPokemonList] = useState<PokemonWithJapaneseName[]>([]);
@@ -56,10 +57,18 @@ export default function Home() {
   };
 
   // 検索クエリに基づいてポケモンをフィルタリングする関数
-  const filteredPokemon = pokemonList.filter(pokemon =>
-    pokemon.japaneseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pokemon.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPokemon = pokemonList.filter(pokemon => {
+    const query = searchQuery.toLowerCase();
+    const name = pokemon.name.toLowerCase();
+    const japaneseName = pokemon.japaneseName;
+    const hiraganaName = katakanaToHiragana(japaneseName);
+    const katakanaName = hiraganaToKatakana(japaneseName);
+    
+    return name.includes(query) || 
+           japaneseName.includes(searchQuery) ||
+           hiraganaName.includes(searchQuery) ||
+           katakanaName.includes(searchQuery);
+  });
 
   if (loading) {
     return (
