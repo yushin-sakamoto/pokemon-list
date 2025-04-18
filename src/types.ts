@@ -5,6 +5,22 @@ export interface PokemonListResponse {
   results: { name: string; url: string }[];
 }
 
+export interface PokemonSpecies {
+  names: {
+    name: string;
+    language: {
+      name: string;
+      url: string;
+    };
+  }[];
+}
+
+export interface PokemonWithJapaneseName {
+  name: string;
+  japaneseName: string;
+  url: string;
+}
+
 export interface Pokemon {
   id: number;
   name: string;
@@ -17,6 +33,10 @@ export interface Pokemon {
         front_default: string;
       };
     };
+  };
+  species: {
+    name: string;
+    url: string;
   };
   types: {
     slot: number;
