@@ -12,14 +12,7 @@ interface PokemonDetailPageProps {
 }
 
 async function fetchPokemonDetails(name: string): Promise<Pokemon | null> {
-  // nameが文字列でない場合はnullを返す
-  if (typeof name !== 'string' || !name) {
-    console.error("Invalid Pokemon name provided:", name);
-    return null;
-  }
-
   try {
-    // nameが文字列であることが保証されているため、toLowerCase()を安全に使用できる
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
     if (!response.ok) {
       if (response.status === 404) {
