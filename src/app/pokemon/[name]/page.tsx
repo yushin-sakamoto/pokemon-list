@@ -1,3 +1,4 @@
+import React from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,6 +19,7 @@ async function fetchPokemonDetails(name: string): Promise<Pokemon | null> {
   }
 
   try {
+    // nameが文字列であることが保証されているため、toLowerCase()を安全に使用できる
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
     if (!response.ok) {
       if (response.status === 404) {
