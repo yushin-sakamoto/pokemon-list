@@ -3,22 +3,42 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { PokemonListResponse } from '@/types';
+import type { PokemonListResponse, PokemonSpecies, PokemonWithJapaneseName } from '@/types';
 
 export default function Home() {
-  const [pokemonList, setPokemonList] = useState<PokemonListResponse | null>(null);
+  const [pokemonList, setPokemonList] = useState<PokemonWithJapaneseName[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     async function fetchPokemonList() {
       try {
+        // 最初の151匹のポケモンリストを取得
         const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
         if (!response.ok) {
           throw new Error('Failed to fetch Pokemon list');
         }
-        const data = await response.json();
-        setPokemonList(data);
+        const data: PokemonListResponse = await response.json();
+
+        // 各ポケモンの日本語名を取得
+        const pokemonWithNames = await Promise.all(
+          data.results.map(async (pokemon) => {
+            const speciesResponse = await fetch(
+              `https://pokeapi.co/api/v2/pokemon-species/${pokemon.name}`
+            );
+            const speciesData: PokemonSpecies = await speciesResponse.json();
+            const japaneseName = speciesData.names.find(
+              (name) => name.language.name === 'ja'
+            )?.name || pokemon.name;
+
+            return {
+              ...pokemon,
+              japaneseName,
+            };
+          })
+        );
+
+        setPokemonList(pokemonWithNames);
       } catch (error) {
         console.error('Error fetching Pokemon list:', error);
       } finally {
@@ -36,22 +56,15 @@ export default function Home() {
   };
 
   // 検索クエリに基づいてポケモンをフィルタリングする関数
-  const filteredPokemon = pokemonList?.results.filter(pokemon =>
+  const filteredPokemon = pokemonList.filter(pokemon =>
+    pokemon.japaneseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     pokemon.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  );
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-xl">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!pokemonList) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-xl text-red-600">Failed to load Pokemon list</p>
+        <p className="text-xl">ポケモンデータを読み込み中...</p>
       </div>
     );
   }
@@ -96,14 +109,14 @@ export default function Home() {
               <div className="aspect-square relative mb-2">
                 <Image
                   src={getPokemonImageUrl(pokemon.url)}
-                  alt={pokemon.name}
+                  alt={pokemon.japaneseName}
                   fill
                   className="object-contain"
                   unoptimized
                 />
               </div>
               <div className="text-center">
-                <p className="text-lg font-semibold capitalize">{pokemon.name}</p>
+                <p className="text-lg font-semibold">{pokemon.japaneseName}</p>
                 <p className="text-gray-600">
                   #{pokemon.url.split('/').filter(Boolean).pop()?.padStart(3, '0')}
                 </p>
