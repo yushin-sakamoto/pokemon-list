@@ -2,14 +2,15 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Pokemon, PokemonSpecies } from '@/types';
+import type { Pokemon, PokemonSpecies, PokemonListResponse } from '@/types';
 
 // params からポケモンの名前を取得
-interface PokemonDetailPageProps {
+type PokemonDetailPageProps = {
   params: {
     name: string;
   };
-}
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
 
 async function fetchPokemonDetails(name: string): Promise<{ pokemon: Pokemon | null; japaneseName: string }> {
   try {
